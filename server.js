@@ -13,9 +13,7 @@ app.use(express.static('public'));
 const JWT_SECRET = 'SaTool_Super_Secret_Key_2025_ChangeThisInProduction';
 const SALT_ROUNDS = 10;
 
-// ============= MongoDB Connection =============
-const MONGODB_URI = "mongodb+srv://alkaabisaeed171_db_user:6kHZvg7HCCXajtvS@satools.a0enlnp.mongodb.net/?appName=SaTools";
-const client = new MongoClient(MONGODB_URI);
+/const MONGODB_URI = "mongodb+srv://alkaabisaeed171_db_user:6kHZvg7HCCXajtvS@satools.a0enlnp.mongodb.net/?appName=SaTools";
 
 let db;
 let usersCollection;
@@ -257,4 +255,4 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`✅ SaTool شغال على http://localhost:${PORT}`);
     console.log(`✅ قاعدة البيانات MongoDB متصلة`);
-});
+})
