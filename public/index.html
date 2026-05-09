@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SaTools</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; padding: 20px; }
@@ -56,7 +57,6 @@
         .send-btn:hover { background: #ff00ff; color: #fff; }
         .target-bar { background: #111; border: 1px solid #00ff41; border-radius: 10px; padding: 15px; margin: 20px 0; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .target-bar input { flex: 1; padding: 10px; background: #0a0a0a; border: 1px solid #00ff41; color: #00ff41; border-radius: 5px; }
-        .target-bar span { color: #ff00ff; font-weight: bold; }
         .result-area { white-space: pre-wrap; font-family: monospace; line-height: 1.5; }
         @media (max-width: 800px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .tools-grid { grid-template-columns: 1fr; } }
     </style>
@@ -64,7 +64,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>⚡ ساتول - نظام أدوات متكامل</h1>
+        <h1>⚡SaTools 10 </h1>
         <div class="login-area" id="loginArea">
             <input type="text" id="loginUser" placeholder="اسم المستخدم">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
@@ -89,7 +89,6 @@
         <div class="stat-card"><span class="stat-number" id="activeCount">0</span><span class="stat-label">نشطين</span></div>
     </div>
 
-    <!-- شريط الهدف -->
     <div class="target-bar">
         <span>🎯 الهدف:</span>
         <input type="text" id="targetInput" placeholder="example.com" value="example.com">
@@ -105,7 +104,6 @@
         <button class="nav-btn" id="adminBtn" onclick="showSection('admin')" style="display:none">👑 أدمن</button>
     </div>
 
-    <!-- قسم الشات -->
     <div id="chatSection" class="chat-box">
         <div class="chat-title">🤖 شات الذكاء الاصطناعي</div>
         <div class="chat-messages" id="chatMessages"></div>
@@ -115,15 +113,13 @@
         </div>
     </div>
 
-    <!-- قسم الأدوات -->
     <div id="toolsSection" class="hidden">
         <div class="tools-box">
-            <div class="chat-title">🛠️ أدوات فحص المواقع - اضغط على أي أداة لفتح الملف</div>
+            <div class="chat-title">🛠️ أدوات فحص المواقع</div>
             <div id="toolsSectionsContainer"></div>
         </div>
     </div>
 
-    <!-- قسم الخوادم -->
     <div id="serversSection" class="hidden">
         <div class="servers-box">
             <div class="chat-title">🌐 خوادم VPN</div>
@@ -131,7 +127,6 @@
         </div>
     </div>
 
-    <!-- قسم تحويل النقاط -->
     <div id="transferSection" class="hidden">
         <div class="transfers-box">
             <div class="chat-title">💰 تحويل نقاط</div>
@@ -144,7 +139,6 @@
         </div>
     </div>
 
-    <!-- قسم شراء النقاط -->
     <div id="buySection" class="hidden">
         <div class="tools-box">
             <div class="chat-title">⭐ شراء نقاط</div>
@@ -160,7 +154,6 @@
         </div>
     </div>
 
-    <!-- قسم الأدمن -->
     <div id="adminSection" class="hidden">
         <div class="tools-box">
             <div class="chat-title">👑 لوحة الأدمن</div>
@@ -187,34 +180,26 @@
         </div>
     </div>
 
-    <!-- قسم النتائج -->
     <div class="chat-box">
         <div class="chat-title">📋 النتائج</div>
-        <div class="result-area" id="result" style="min-height:150px; padding:15px; background:#0a0a0a; border-radius:5px; overflow-x:auto">بانتظار أمرك...</div>
+        <div class="result-area" id="result" style="min-height:150px; padding:15px; background:#0a0a0a; border-radius:5px">بانتظار أمرك...</div>
     </div>
 </div>
 
 <script>
-    let users = JSON.parse(localStorage.getItem('satool_users')) || [];
-    let currentUser = JSON.parse(localStorage.getItem('satool_current')) || null;
-    let transfers = JSON.parse(localStorage.getItem('satool_transfers')) || [];
-    let stats = JSON.parse(localStorage.getItem('satool_stats')) || { online: 12, purchases: 342, visitors: 1289, active: 56, profit: 0 };
-    let uploadedFiles = JSON.parse(localStorage.getItem('satool_uploaded_files')) || {};
+    let authToken = localStorage.getItem('satool_token') || null;
+    let currentUser = JSON.parse(localStorage.getItem('satool_user')) || null;
     let currentTarget = localStorage.getItem('satool_target') || 'example.com';
-    
-    // أقسام الأدوات
     let toolSections = JSON.parse(localStorage.getItem('satool_tool_sections')) || [
         { id: 'exploit', name: '🔓 أدوات الثغرات', icon: '🔓', tools: [
-            { name: "💉 SQL Injection", desc: "اختبار ثغرات SQL", hasFile: false, fileId: null, fileName: null, content: "SQL Injection Tool\nTarget: {target}\nStatus: تم فحص ثغرات SQL\nResults: تم العثور على 3 ثغرات" },
-            { name: "🌐 XSS Attack", desc: "اختبار ثغرات XSS", hasFile: false, fileId: null, fileName: null, content: "XSS Scanner\nTarget: {target}\nResults: تم العثور على 5 ثغرات XSS" },
-            { name: "📁 LFI/RFI", desc: "اختبار تضمين الملفات", hasFile: false, fileId: null, fileName: null, content: "LFI/RFI Scanner\nTarget: {target}\nFiles found: /etc/passwd, /config.php" }
+            { name: "💉 SQL Injection", desc: "اختبار ثغرات SQL", hasFile: false, content: "✅ SQL Injection Tool\nTarget: {target}\nتم العثور على 3 ثغرات" },
+            { name: "🌐 XSS Attack", desc: "اختبار ثغرات XSS", hasFile: false, content: "✅ XSS Scanner\nTarget: {target}\nتم العثور على 5 ثغرات" },
+            { name: "📁 LFI/RFI", desc: "اختبار تضمين الملفات", hasFile: false, content: "✅ LFI/RFI Scanner\nTarget: {target}\nملفات حساسة: /etc/passwd" }
         ]},
         { id: 'info', name: '🔍 أدوات المعلومات', icon: '🔍', tools: [
-            { name: "🔍 OSINT Search", desc: "البحث في المصادر المفتوحة", hasFile: false, fileId: null, fileName: null, content: "OSINT Search\nTarget: {target}\nResults: 47 links, 12 emails found" },
-            { name: "🌐 Subdomain Finder", desc: "اكتشاف النطاقات الفرعية", hasFile: false, fileId: null, fileName: null, content: "Subdomain Finder\nTarget: {target}\nSubdomains: mail., admin., dev., api." },
-            { name: "📡 Port Scanner", desc: "اختبار قنوات TCP", hasFile: false, fileId: null, fileName: null, content: "Port Scanner\nTarget: {target}\nOpen ports: 22, 80, 443, 3306" },
-            { name: "🔧 DNS Lookup", desc: "استعلامات DNS", hasFile: false, fileId: null, fileName: null, content: "DNS Lookup\nTarget: {target}\nRecords: A, MX, TXT, NS" },
-            { name: "📋 Whois Lookup", desc: "معلومات النطاق", hasFile: false, fileId: null, fileName: null, content: "Whois Lookup\nTarget: {target}\nRegistrar: GoDaddy\nCreated: 2020-01-01" }
+            { name: "🔍 OSINT Search", desc: "البحث في المصادر المفتوحة", hasFile: false, content: "✅ OSINT Search\nTarget: {target}\nتم العثور على 47 رابط" },
+            { name: "🌐 Subdomain Finder", desc: "اكتشاف النطاقات الفرعية", hasFile: false, content: "✅ Subdomain Finder\nTarget: {target}\nالنطاقات: mail., admin., api." },
+            { name: "📡 Port Scanner", desc: "اختبار قنوات TCP", hasFile: false, content: "✅ Port Scanner\nTarget: {target}\nالمنافذ المفتوحة: 22, 80, 443" }
         ]}
     ];
     
@@ -225,29 +210,62 @@
         { name: "🇷🇺 VPN روسيا", location: "Moscow", host: "ru.vpn.satool.com", points: 5 }
     ];
     
-    const ADMIN = { id: 'admin', username: 'Admin', password: 'Admin@123', isAdmin: true, points: 9999 };
-    if(!users.find(u => u.isAdmin)) users.push(ADMIN);
-    
     document.getElementById('targetInput').value = currentTarget;
-    document.getElementById('setTargetBtn').onclick = function() {
-        currentTarget = document.getElementById('targetInput').value;
-        localStorage.setItem('satool_target', currentTarget);
-        document.getElementById('result').innerHTML = `✅ تم تحديث الهدف إلى: ${currentTarget}`;
-    };
     
-    function saveUsers() { localStorage.setItem('satool_users', JSON.stringify(users)); }
-    function saveToolSections() { localStorage.setItem('satool_tool_sections', JSON.stringify(toolSections)); }
-    function saveStats() { localStorage.setItem('satool_stats', JSON.stringify(stats)); }
-    function saveTransfers() { localStorage.setItem('satool_transfers', JSON.stringify(transfers)); }
-    function saveUploadedFiles() { localStorage.setItem('satool_uploaded_files', JSON.stringify(uploadedFiles)); }
+    async function apiCall(endpoint, method, body) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        const response = await fetch(endpoint, { method, headers, body: body ? JSON.stringify(body) : undefined });
+        return await response.json();
+    }
+    
+    async function login() {
+        const username = document.getElementById('loginUser').value;
+        const password = document.getElementById('loginPass').value;
+        if (!username || !password) { alert('أدخل اسم المستخدم وكلمة المرور'); return; }
+        
+        const data = await apiCall('/api/login', 'POST', { username, password });
+        if (data.success) {
+            authToken = data.token;
+            currentUser = data.user;
+            localStorage.setItem('satool_token', authToken);
+            localStorage.setItem('satool_user', JSON.stringify(currentUser));
+            document.getElementById('loginArea').innerHTML = `<span>👋 مرحباً ${currentUser.username} ${currentUser.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
+            if (currentUser.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
+            updateStats(); loadChat(); loadToolsSections(); showSection('chat'); getCurrentIP();
+        } else {
+            alert(data.error || 'خطأ في تسجيل الدخول');
+        }
+    }
+    
+    async function register() {
+        const username = document.getElementById('regUser').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPass').value;
+        if (!username || !password) { alert('املأ الحقول'); return; }
+        const data = await apiCall('/api/register', 'POST', { username, email, password });
+        if (data.success) {
+            alert('تم التسجيل بنجاح! يمكنك تسجيل الدخول الآن');
+            document.getElementById('registerDiv').style.display = 'none';
+        } else {
+            alert(data.error || 'خطأ في التسجيل');
+        }
+    }
+    
+    async function logout() {
+        await apiCall('/api/logout', 'POST', {});
+        localStorage.removeItem('satool_token');
+        localStorage.removeItem('satool_user');
+        location.reload();
+    }
     
     function showSection(section) {
         document.querySelectorAll('#chatSection, #toolsSection, #serversSection, #transferSection, #buySection, #adminSection').forEach(s => s.classList.add('hidden'));
         document.getElementById(section + 'Section').classList.remove('hidden');
-        if(section === 'tools') loadToolsSections();
-        if(section === 'servers') loadServers();
-        if(section === 'admin') loadAdminPanel();
-        if(section === 'transfer') loadTransferHistory();
+        if (section === 'tools') loadToolsSections();
+        if (section === 'servers') loadServers();
+        if (section === 'admin') loadAdminPanel();
+        if (section === 'transfer') loadTransferHistory();
     }
     
     function loadToolsSections() {
@@ -259,199 +277,25 @@
             sectionDiv.innerHTML = `
                 <div class="section-header">
                     <span class="section-title-text">${section.name}</span>
-                    ${currentUser?.isAdmin ? `
-                        <div class="section-controls">
-                            <button class="admin-action" onclick="editSectionName(${sectionIdx})">✏️ تعديل</button>
-                            <button class="admin-action" onclick="deleteSection(${sectionIdx})">🗑️ حذف</button>
-                        </div>
-                    ` : ''}
+                    ${currentUser?.isAdmin ? `<div class="section-controls"><button class="admin-action" onclick="editSectionName(${sectionIdx})">✏️ تعديل</button><button class="admin-action" onclick="deleteSection(${sectionIdx})">🗑️ حذف</button></div>` : ''}
                 </div>
                 <div class="tools-grid" id="tools-grid-${sectionIdx}"></div>
             `;
             container.appendChild(sectionDiv);
-            
             let grid = document.getElementById(`tools-grid-${sectionIdx}`);
             grid.innerHTML = '';
             section.tools.forEach((tool, toolIdx) => {
-                let fileInfo = '';
-                if(tool.hasFile && tool.fileName) {
-                    fileInfo = `<div class="tool-file">📎 ${tool.fileName}</div>`;
-                }
-                grid.innerHTML += `
-                    <div class="tool-card" onclick="runTool(${sectionIdx}, ${toolIdx})">
-                        ${currentUser?.isAdmin ? `<button class="tool-admin-edit" onclick="event.stopPropagation(); editToolInSection(${sectionIdx}, ${toolIdx})">✏️</button>` : ''}
-                        ${currentUser?.isAdmin ? `<button class="tool-admin-delete" onclick="event.stopPropagation(); deleteToolFromSection(${sectionIdx}, ${toolIdx})">🗑️</button>` : ''}
-                        <div class="tool-name">${tool.name}</div>
-                        <div class="tool-desc">${tool.desc || 'أداة متخصصة'}</div>
-                        ${fileInfo}
-                    </div>
-                `;
+                grid.innerHTML += `<div class="tool-card" onclick="runTool(${sectionIdx}, ${toolIdx})"><div class="tool-name">${tool.name}</div><div class="tool-desc">${tool.desc}</div></div>`;
             });
         });
     }
     
-    async function runTool(sectionIdx, toolIdx) {
-        if(!currentUser) { alert('سجل دخول أولاً'); return; }
+    function runTool(sectionIdx, toolIdx) {
+        if (!currentUser) { alert('سجل دخول أولاً'); return; }
         let tool = toolSections[sectionIdx].tools[toolIdx];
-        if(!tool) return;
-        
-        // إذا كان هناك ملف مرفق - تحميل الملف
-        if(tool.hasFile && tool.fileId && uploadedFiles[tool.fileId]) {
-            let file = uploadedFiles[tool.fileId];
-            // إنشاء رابط تحميل الملف
-            const link = document.createElement('a');
-            link.href = file.data;
-            link.download = file.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            document.getElementById('result').innerHTML = `📥 **${tool.name}**\n📁 تم فتح/تحميل الملف: ${file.name}\n📦 الحجم: ${(file.size/1024).toFixed(2)} KB\n🎯 الهدف: ${currentTarget}\n⏰ ${new Date().toLocaleString()}`;
-            stats.purchases++; saveStats(); updateStats();
-            return;
-        }
-        
-        // عرض محتوى الأداة مع تضمين الهدف
-        let content = tool.content || `✅ ${tool.name}\n📊 اكتمل بنجاح`;
-        content = content.replace(/{target}/g, currentTarget);
-        document.getElementById('result').innerHTML = `${content}\n\n🎯 الهدف: ${currentTarget}\n👤 المستخدم: ${currentUser.username}\n⏰ ${new Date().toLocaleString()}`;
-        stats.purchases++; saveStats(); updateStats();
+        let content = (tool.content || `✅ ${tool.name} اكتمل بنجاح`).replace(/{target}/g, currentTarget);
+        document.getElementById('result').innerHTML = `${content}\n🎯 الهدف: ${currentTarget}\n👤 المستخدم: ${currentUser.username}\n⏰ ${new Date().toLocaleString()}`;
     }
-    
-    // إدارة الأقسام
-    function updateSectionSelect() {
-        let select = document.getElementById('toolSectionSelect');
-        if(select) {
-            select.innerHTML = '';
-            toolSections.forEach((section, idx) => {
-                select.innerHTML += `<option value="${idx}">${section.name}</option>`;
-            });
-        }
-    }
-    
-    function addNewSection() {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        let name = document.getElementById('newSectionName').value;
-        let icon = document.getElementById('newSectionIcon').value || '📁';
-        if(!name) { alert('اكتب اسم القسم'); return; }
-        toolSections.push({ id: 'sec_' + Date.now(), name: icon + ' ' + name, icon: icon, tools: [] });
-        saveToolSections();
-        loadToolsSections();
-        updateSectionSelect();
-        document.getElementById('newSectionName').value = '';
-        document.getElementById('newSectionIcon').value = '';
-        document.getElementById('result').innerHTML = `✅ تم إنشاء قسم جديد: ${icon} ${name}`;
-    }
-    
-    function editSectionName(sectionIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        let newName = prompt('الاسم الجديد للقسم:', toolSections[sectionIdx].name);
-        if(newName) {
-            toolSections[sectionIdx].name = newName;
-            saveToolSections();
-            loadToolsSections();
-            updateSectionSelect();
-            document.getElementById('result').innerHTML = `✅ تم تعديل اسم القسم`;
-        }
-    }
-    
-    function deleteSection(sectionIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        if(confirm('حذف هذا القسم وجميع أدواته؟')) {
-            toolSections.splice(sectionIdx, 1);
-            saveToolSections();
-            loadToolsSections();
-            updateSectionSelect();
-            document.getElementById('result').innerHTML = `🗑️ تم حذف القسم`;
-        }
-    }
-    
-    function editToolInSection(sectionIdx, toolIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        let tool = toolSections[sectionIdx].tools[toolIdx];
-        let newName = prompt('الاسم الجديد:', tool.name);
-        let newDesc = prompt('الوصف الجديد:', tool.desc);
-        if(newName) tool.name = newName;
-        if(newDesc) tool.desc = newDesc;
-        saveToolSections();
-        loadToolsSections();
-        document.getElementById('result').innerHTML = `✅ تم تعديل الأداة`;
-    }
-    
-    function deleteToolFromSection(sectionIdx, toolIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        if(confirm('حذف هذه الأداة؟')) {
-            let tool = toolSections[sectionIdx].tools[toolIdx];
-            if(tool.hasFile && tool.fileId && uploadedFiles[tool.fileId]) {
-                delete uploadedFiles[tool.fileId];
-                saveUploadedFiles();
-            }
-            toolSections[sectionIdx].tools.splice(toolIdx, 1);
-            saveToolSections();
-            loadToolsSections();
-            document.getElementById('result').innerHTML = `🗑️ تم حذف الأداة`;
-        }
-    }
-    
-    function addNewToolWithFile() {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        let sectionIdx = parseInt(document.getElementById('toolSectionSelect').value);
-        let name = document.getElementById('newToolName').value;
-        let desc = document.getElementById('newToolDesc').value;
-        let fileInput = document.getElementById('newToolFile');
-        
-        if(isNaN(sectionIdx)) { alert('اختر القسم أولاً'); return; }
-        if(!name) { alert('اكتب اسم الأداة'); return; }
-        
-        let newTool = { name: name, desc: desc || 'أداة جديدة', hasFile: false, fileId: null, fileName: null, content: `✅ ${name}\n📊 تم تشغيل الأداة بنجاح\n🎯 الهدف: {target}` };
-        
-        if(fileInput.files.length > 0) {
-            let file = fileInput.files[0];
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let fileId = 'toolfile_' + Date.now() + '_' + file.name;
-                uploadedFiles[fileId] = {
-                    name: file.name,
-                    data: e.target.result,
-                    type: file.type,
-                    size: file.size,
-                    toolName: name
-                };
-                saveUploadedFiles();
-                newTool.hasFile = true;
-                newTool.fileId = fileId;
-                newTool.fileName = file.name;
-                toolSections[sectionIdx].tools.push(newTool);
-                saveToolSections();
-                loadToolsSections();
-                document.getElementById('result').innerHTML = `✅ تم إضافة "${name}" إلى ${toolSections[sectionIdx].name} مع ملف ${file.name}`;
-                clearAddToolForm();
-            };
-            reader.readAsDataURL(file);
-        } else {
-            toolSections[sectionIdx].tools.push(newTool);
-            saveToolSections();
-            loadToolsSections();
-            document.getElementById('result').innerHTML = `✅ تم إضافة "${name}" إلى ${toolSections[sectionIdx].name}`;
-            clearAddToolForm();
-        }
-    }
-    
-    function clearAddToolForm() {
-        document.getElementById('newToolName').value = '';
-        document.getElementById('newToolDesc').value = '';
-        document.getElementById('newToolFile').value = '';
-        document.getElementById('fileNameDisplay').innerHTML = 'لم يتم اختيار ملف';
-    }
-    
-    document.getElementById('addToolBtn').onclick = addNewToolWithFile;
-    document.getElementById('newToolFile').onchange = function() {
-        let span = document.getElementById('fileNameDisplay');
-        if(this.files.length > 0) {
-            span.innerHTML = `📎 ${this.files[0].name} (${(this.files[0].size/1024).toFixed(2)} KB)`;
-        } else {
-            span.innerHTML = 'لم يتم اختيار ملف';
-        }
-    };
     
     function loadServers() {
         let container = document.getElementById('serversList');
@@ -462,16 +306,135 @@
     }
     
     async function connectVPN(serverIdx) {
-        if(!currentUser) { alert('سجل دخول أولاً'); return; }
+        if (!currentUser) { alert('سجل دخول أولاً'); return; }
         let server = vpnServers[serverIdx];
-        let user = users.find(u => u.id === currentUser.id);
-        if(user.points >= server.points) {
-            user.points -= server.points;
-            saveUsers();
+        let data = await apiCall('/api/update-points', 'POST', { points: -server.points });
+        if (data.success) {
+            currentUser.points = data.points;
+            localStorage.setItem('satool_user', JSON.stringify(currentUser));
             updateStats();
-            document.getElementById('result').innerHTML = `✅ **تم الاتصال بـ ${server.name}**\n🌐 الخادم: ${server.host}\n💰 تم خصم ${server.points} نقطة\n🎯 الهدف: ${currentTarget}\n\n📌 للإعداد اليدوي:\n• استخدم Proxy: ${server.host}:443\n• البروتوكول: HTTPS`;
-            getCurrentIP();
-        } else { document.getElementById('result').innerHTML = `❌ تحتاج ${server.points} نقطة، رصيدك: ${user.points}`; }
+            document.getElementById('result').innerHTML = `✅ تم الاتصال بـ ${server.name}\n🌐 الخادم: ${server.host}\n💰 تم خصم ${server.points} نقطة`;
+        } else {
+            document.getElementById('result').innerHTML = `❌ نقاط غير كافية!`;
+        }
+    }
+    
+    async function transferPoints() {
+        if (!currentUser) { alert('سجل دخول أولاً'); return; }
+        let toUsername = document.getElementById('transferTo').value;
+        let amount = parseInt(document.getElementById('transferAmount').value);
+        if (!toUsername || isNaN(amount) || amount <= 0) return;
+        let data = await apiCall('/api/update-points', 'POST', { points: -amount });
+        if (data.success) {
+            currentUser.points = data.points;
+            localStorage.setItem('satool_user', JSON.stringify(currentUser));
+            updateStats();
+            document.getElementById('result').innerHTML = `✅ تم تحويل ${amount} نقطة إلى ${toUsername}`;
+        } else {
+            document.getElementById('result').innerHTML = `❌ نقاط غير كافية!`;
+        }
+    }
+    
+    function buyPointsTelegram() {
+        let amount = parseInt(document.getElementById('pointsAmount').value);
+        document.getElementById('result').innerHTML = `⭐ شراء ${amount} نقطة\n💰 السعر: ${amount/100}$\n⭐ نجوم تيليجرام: ${amount/10} نجمة\n\nللشراء تواصل مع البوت @SatoolBot`;
+    }
+    
+    function loadAdminPanel() {
+        if (!currentUser?.isAdmin) return;
+        updateSectionSelect();
+    }
+    
+    function updateSectionSelect() {
+        let select = document.getElementById('toolSectionSelect');
+        if (select) {
+            select.innerHTML = '';
+            toolSections.forEach((section, idx) => {
+                select.innerHTML += `<option value="${idx}">${section.name}</option>`;
+            });
+        }
+    }
+    
+    function addNewSection() {
+        if (!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
+        let name = document.getElementById('newSectionName').value;
+        let icon = document.getElementById('newSectionIcon').value || '📁';
+        if (!name) { alert('اكتب اسم القسم'); return; }
+        toolSections.push({ id: 'sec_' + Date.now(), name: icon + ' ' + name, icon: icon, tools: [] });
+        localStorage.setItem('satool_tool_sections', JSON.stringify(toolSections));
+        loadToolsSections();
+        updateSectionSelect();
+        document.getElementById('newSectionName').value = '';
+        document.getElementById('newSectionIcon').value = '';
+        document.getElementById('result').innerHTML = `✅ تم إنشاء قسم جديد: ${icon} ${name}`;
+    }
+    
+    function editSectionName(sectionIdx) {
+        if (!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
+        let newName = prompt('الاسم الجديد للقسم:', toolSections[sectionIdx].name);
+        if (newName) {
+            toolSections[sectionIdx].name = newName;
+            localStorage.setItem('satool_tool_sections', JSON.stringify(toolSections));
+            loadToolsSections();
+            updateSectionSelect();
+            document.getElementById('result').innerHTML = `✅ تم تعديل اسم القسم`;
+        }
+    }
+    
+    function deleteSection(sectionIdx) {
+        if (!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
+        if (confirm('حذف هذا القسم وجميع أدواته؟')) {
+            toolSections.splice(sectionIdx, 1);
+            localStorage.setItem('satool_tool_sections', JSON.stringify(toolSections));
+            loadToolsSections();
+            updateSectionSelect();
+            document.getElementById('result').innerHTML = `🗑️ تم حذف القسم`;
+        }
+    }
+    
+    document.getElementById('addToolBtn').onclick = function() {
+        if (!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
+        let sectionIdx = parseInt(document.getElementById('toolSectionSelect').value);
+        let name = document.getElementById('newToolName').value;
+        let desc = document.getElementById('newToolDesc').value;
+        if (isNaN(sectionIdx)) { alert('اختر القسم أولاً'); return; }
+        if (!name) { alert('اكتب اسم الأداة'); return; }
+        let newTool = { name: name, desc: desc || 'أداة جديدة', hasFile: false, content: `✅ ${name}\nتم تشغيل الأداة بنجاح` };
+        toolSections[sectionIdx].tools.push(newTool);
+        localStorage.setItem('satool_tool_sections', JSON.stringify(toolSections));
+        loadToolsSections();
+        document.getElementById('newToolName').value = '';
+        document.getElementById('newToolDesc').value = '';
+        document.getElementById('result').innerHTML = `✅ تم إضافة "${name}" إلى ${toolSections[sectionIdx].name}`;
+    };
+    
+    function loadTransferHistory() {
+        let container = document.getElementById('transferHistory');
+        container.innerHTML = '<div class="chat-title" style="font-size:1em">📜 سجل التحويلات</div><div class="reply-item">لا توجد تحويلات حالياً</div>';
+    }
+    
+    async function updateStats() {
+        let data = await apiCall('/api/stats', 'GET');
+        document.getElementById('onlineCount').innerText = data.activeSessions || 0;
+        document.getElementById('purchaseCount').innerText = data.totalPurchases || 0;
+        document.getElementById('visitCount').innerText = data.totalUsers || 0;
+        document.getElementById('activeCount').innerText = data.todayVisitors || 0;
+        if (currentUser) {
+            document.getElementById('userPoints').innerText = currentUser.points;
+        }
+    }
+    
+    function loadChat() { document.getElementById('chatMessages').innerHTML = '<div class="message bot-msg">🤖 مرحباً! اسألني أي شيء عن الأدوات...</div>'; }
+    async function sendChat() {
+        let input = document.getElementById('chatInput');
+        let text = input.value.trim();
+        if (!text || !currentUser) return;
+        let container = document.getElementById('chatMessages');
+        container.innerHTML += `<div class="message user-msg">👤 ${text}</div>`;
+        let data = await apiCall('/api/chat', 'POST', { message: text, username: currentUser.username });
+        container.innerHTML += `<div class="message bot-msg">🤖 ${data.reply}</div>`;
+        input.value = '';
+        container.scrollTop = container.scrollHeight;
     }
     
     async function getCurrentIP() {
@@ -482,115 +445,27 @@
         } catch(e) {}
     }
     
-    function transferPoints() {
-        if(!currentUser) { alert('سجل دخول أولاً'); return; }
-        let toUsername = document.getElementById('transferTo').value.trim();
-        let amount = parseInt(document.getElementById('transferAmount').value);
-        if(!toUsername || isNaN(amount) || amount <= 0) return;
-        let fromUser = users.find(u => u.id === currentUser.id);
-        let toUser = users.find(u => u.username === toUsername);
-        if(!toUser) { alert('المستخدم غير موجود'); return; }
-        if(fromUser.points < amount) { alert(`نقاط غير كافية`); return; }
-        fromUser.points -= amount;
-        toUser.points += amount;
-        saveUsers();
-        transfers.unshift({ from: currentUser.username, to: toUsername, amount: amount, date: Date.now() });
-        saveTransfers();
-        loadTransferHistory();
-        updateStats();
-        document.getElementById('result').innerHTML = `✅ تم تحويل ${amount} نقطة إلى ${toUsername}\n🎯 الهدف: ${currentTarget}`;
-        document.getElementById('transferTo').value = '';
-        document.getElementById('transferAmount').value = '';
-    }
-    
-    function loadTransferHistory() {
-        let container = document.getElementById('transferHistory');
-        container.innerHTML = '<div class="chat-title" style="font-size:1em">📜 سجل التحويلات</div>';
-        transfers.slice(0, 20).forEach(t => {
-            container.innerHTML += `<div class="reply-item">💰 ${t.from} → ${t.to} : ${t.amount} نقطة | ${new Date(t.date).toLocaleString()}</div>`;
-        });
-    }
-    
-    function buyPointsTelegram() {
-        let amount = parseInt(document.getElementById('pointsAmount').value);
-        document.getElementById('result').innerHTML = `⭐ شراء ${amount} نقطة\n💰 السعر: ${amount/100}$\n⭐ نجوم تيليجرام: ${amount/10} نجمة\n🎯 الهدف: ${currentTarget}\n\nللشراء تواصل مع البوت @SatoolBot`;
-    }
-    
-    function loadAdminPanel() {
-        if(!currentUser?.isAdmin) return;
-        document.getElementById('totalProfit').innerText = stats.profit || 0;
-        updateSectionSelect();
-        let usersList = document.getElementById('adminUsersList');
-        usersList.innerHTML = '<div class="chat-title" style="font-size:1em">👥 المستخدمين</div>';
-        users.forEach(u => {
-            usersList.innerHTML += `<div class="reply-item">${u.username} - ${u.points} نقطة${u.isAdmin ? ' (أدمن)' : ''}</div>`;
-        });
-    }
-    
-    function loadChat() { document.getElementById('chatMessages').innerHTML = '<div class="message bot-msg">🤖 مرحباً! اسألني أي شيء عن الأدوات والثغرات...</div>'; }
-    
-    function sendChat() {
-        let input = document.getElementById('chatInput');
-        let text = input.value.trim();
-        if(!text || !currentUser) return;
-        let container = document.getElementById('chatMessages');
-        container.innerHTML += `<div class="message user-msg">👤 ${text}</div>`;
-        setTimeout(() => {
-            container.innerHTML += `<div class="message bot-msg">🤖 رد: "${text}"\n\n🎯 الهدف الحالي: ${currentTarget}\nاسأل عن SQL, XSS, LFI, OSINT, Port Scanner!</div>`;
-            container.scrollTop = container.scrollHeight;
-        }, 500);
-        input.value = '';
-        container.scrollTop = container.scrollHeight;
-    }
-    
-    function updateStats() {
-        document.getElementById('onlineCount').innerText = stats.online;
-        document.getElementById('purchaseCount').innerText = stats.purchases;
-        document.getElementById('visitCount').innerText = stats.visitors;
-        document.getElementById('activeCount').innerText = stats.active;
-        if(currentUser) {
-            let user = users.find(u => u.id === currentUser.id);
-            document.getElementById('userPoints').innerText = user ? user.points : 0;
-        }
-        document.getElementById('currentIP').innerHTML = `🌐 IP الحالي: محلي | 🎯 الهدف: ${currentTarget}`;
-    }
-    
-    function login() {
-        let username = document.getElementById('loginUser').value;
-        let password = document.getElementById('loginPass').value;
-        let user = users.find(u => u.username === username && u.password === password);
-        if(user) {
-            currentUser = user;
-            localStorage.setItem('satool_current', JSON.stringify(user));
-            document.getElementById('loginArea').innerHTML = `<span>👋 مرحباً ${user.username} ${user.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
-            if(user.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
-            updateStats(); loadChat(); loadToolsSections(); showSection('chat'); getCurrentIP();
-        } else { alert('خطأ\nلأدمن:- / -'); }
-    }
-    
-    function register() {
-        let username = document.getElementById('regUser').value;
-        let email = document.getElementById('regEmail').value;
-        let password = document.getElementById('regPass').value;
-        if(!username || !password) { alert('املأ الحقول'); return; }
-        if(users.find(u => u.username === username)) { alert('الاسم موجود'); return; }
-        users.push({ id: 'u'+Date.now(), username, email, password, isAdmin: false, points: 100 });
-        saveUsers(); alert('تم التسجيل!'); document.getElementById('registerDiv').style.display = 'none';
-    }
+    document.getElementById('setTargetBtn').onclick = function() {
+        currentTarget = document.getElementById('targetInput').value;
+        localStorage.setItem('satool_target', currentTarget);
+        document.getElementById('result').innerHTML = `✅ تم تحديث الهدف إلى: ${currentTarget}`;
+        getCurrentIP();
+    };
     
     function showRegister() { document.getElementById('registerDiv').style.display = 'block'; }
-    function logout() { localStorage.removeItem('satool_current'); location.reload(); }
     
-    if(currentUser) {
+    if (currentUser) {
         document.getElementById('loginArea').innerHTML = `<span>👋 مرحباً ${currentUser.username} ${currentUser.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
-        if(currentUser.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
-        loadChat(); loadToolsSections();
+        if (currentUser.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
+        updateStats(); loadChat(); loadToolsSections(); getCurrentIP();
+    } else {
+        showSection('chat');
+        loadChat();
+        getCurrentIP();
     }
     
     updateStats();
-    showSection('chat');
-    getCurrentIP();
-    updateSectionSelect();
+    setInterval(() => { if (currentUser) updateStats(); }, 30000);
 </script>
 </body>
 </html>
