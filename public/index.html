@@ -565,7 +565,7 @@
             document.getElementById('loginArea').innerHTML = `<span>👋 مرحباً ${user.username} ${user.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
             if(user.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
             updateStats(); loadChat(); loadToolsSections(); showSection('chat'); getCurrentIP();
-        } else { alert('خطأ\nلأدمن: Admin / Admin@123'); }
+        } else { alert('خطأ\nلأدمن:- / -'); }
     }
     
     function register() {
