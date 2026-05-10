@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ساتول - نظام أدوات متكامل</title>
+    <title>SaTools</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; padding: 20px; }
@@ -23,6 +23,15 @@
         .stat-label { font-size: 0.8em; color: #888; }
         .chat-box, .forum-box, .tools-box, .servers-box, .transfers-box { background: #111; border: 1px solid #00ff41; border-radius: 10px; padding: 15px; margin: 20px 0; }
         .chat-title { font-size: 1.3em; font-weight: bold; border-bottom: 1px solid #00ff41; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .forum-post { background: #0a0a0a; border: 1px solid #00ff41; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .post-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #00ff41; padding-bottom: 8px; margin-bottom: 10px; }
+        .post-author { color: #ff00ff; font-weight: bold; }
+        .post-date { color: #888; font-size: 0.8em; }
+        .post-title { font-size: 1.2em; font-weight: bold; margin: 10px 0; color: #00ff41; }
+        .post-content { margin: 10px 0; line-height: 1.5; white-space: pre-wrap; }
+        .replies-area { margin-top: 10px; padding-right: 20px; max-height: 200px; overflow-y: auto; }
+        .reply-item { background: #111; padding: 5px; margin: 5px 0; border-radius: 5px; }
+        .reply-author { color: #ff00ff; font-size: 0.8em; }
         .tools-section-card { background: #0a0a0a; border: 1px solid #00ff41; border-radius: 10px; padding: 15px; margin-bottom: 20px; position: relative; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid #00ff41; }
         .section-title-text { font-size: 1.2em; font-weight: bold; color: #ff00ff; }
@@ -56,7 +65,6 @@
         .send-btn:hover { background: #ff00ff; color: #fff; }
         .target-bar { background: #111; border: 1px solid #00ff41; border-radius: 10px; padding: 15px; margin: 20px 0; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .target-bar input { flex: 1; padding: 10px; background: #0a0a0a; border: 1px solid #00ff41; color: #00ff41; border-radius: 5px; }
-        .target-bar span { color: #ff00ff; font-weight: bold; }
         .result-area { white-space: pre-wrap; font-family: monospace; line-height: 1.5; }
         @media (max-width: 800px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .tools-grid { grid-template-columns: 1fr; } }
     </style>
@@ -64,7 +72,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>⚡ ساتول - نظام أدوات متكامل</h1>
+        <h1>⚡ SaTools</h1>
         <div class="login-area" id="loginArea">
             <input type="text" id="loginUser" placeholder="اسم المستخدم">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
@@ -89,7 +97,6 @@
         <div class="stat-card"><span class="stat-number" id="activeCount">0</span><span class="stat-label">نشطين</span></div>
     </div>
 
-    <!-- شريط الهدف -->
     <div class="target-bar">
         <span>🎯 الهدف:</span>
         <input type="text" id="targetInput" placeholder="example.com" value="example.com">
@@ -98,6 +105,7 @@
 
     <div class="nav-bar">
         <button class="nav-btn" onclick="showSection('chat')">💬 شات</button>
+        <button class="nav-btn" onclick="showSection('forum')">📝 منتدى</button>
         <button class="nav-btn" onclick="showSection('tools')">🛠️ الأدوات</button>
         <button class="nav-btn" onclick="showSection('servers')">🌐 خوادم VPN</button>
         <button class="nav-btn" onclick="showSection('transfer')">💰 تحويل نقاط</button>
@@ -105,7 +113,7 @@
         <button class="nav-btn" id="adminBtn" onclick="showSection('admin')" style="display:none">👑 أدمن</button>
     </div>
 
-    <!-- قسم الشات -->
+    <!-- شات -->
     <div id="chatSection" class="chat-box">
         <div class="chat-title">🤖 شات الذكاء الاصطناعي</div>
         <div class="chat-messages" id="chatMessages"></div>
@@ -115,15 +123,28 @@
         </div>
     </div>
 
-    <!-- قسم الأدوات -->
+    <!-- منتدى -->
+    <div id="forumSection" class="hidden">
+        <div class="forum-box">
+            <div class="chat-title">📝 المنتدى - شارك برأيك</div>
+            <div class="new-post-form">
+                <input type="text" id="postTitle" placeholder="عنوان الموضوع">
+                <textarea id="postContent" rows="3" placeholder="محتوى الموضوع..."></textarea>
+                <button class="send-btn" onclick="addNewPost()">➕ إنشاء موضوع</button>
+            </div>
+            <div id="forumPosts"></div>
+        </div>
+    </div>
+
+    <!-- أدوات -->
     <div id="toolsSection" class="hidden">
         <div class="tools-box">
-            <div class="chat-title">🛠️ أدوات فحص المواقع - اضغط على أي أداة لفتح الملف</div>
+            <div class="chat-title">🛠️ أدوات فحص المواقع</div>
             <div id="toolsSectionsContainer"></div>
         </div>
     </div>
 
-    <!-- قسم الخوادم -->
+    <!-- خوادم VPN -->
     <div id="serversSection" class="hidden">
         <div class="servers-box">
             <div class="chat-title">🌐 خوادم VPN</div>
@@ -131,7 +152,7 @@
         </div>
     </div>
 
-    <!-- قسم تحويل النقاط -->
+    <!-- تحويل نقاط -->
     <div id="transferSection" class="hidden">
         <div class="transfers-box">
             <div class="chat-title">💰 تحويل نقاط</div>
@@ -144,7 +165,7 @@
         </div>
     </div>
 
-    <!-- قسم شراء النقاط -->
+    <!-- شراء نقاط -->
     <div id="buySection" class="hidden">
         <div class="tools-box">
             <div class="chat-title">⭐ شراء نقاط</div>
@@ -160,7 +181,7 @@
         </div>
     </div>
 
-    <!-- قسم الأدمن -->
+    <!-- أدمن -->
     <div id="adminSection" class="hidden">
         <div class="tools-box">
             <div class="chat-title">👑 لوحة الأدمن</div>
@@ -168,8 +189,8 @@
             
             <div class="add-section-form">
                 <div class="chat-title" style="font-size:1em">📁 إنشاء قسم جديد للأدوات</div>
-                <input type="text" id="newSectionName" placeholder="اسم القسم (مثال: أدوات الثغرات)">
-                <input type="text" id="newSectionIcon" placeholder="أيقونة (مثال: 🔓)">
+                <input type="text" id="newSectionName" placeholder="اسم القسم">
+                <input type="text" id="newSectionIcon" placeholder="أيقونة">
                 <button class="send-btn" onclick="addNewSection()">➕ إنشاء قسم</button>
             </div>
             
@@ -187,34 +208,32 @@
         </div>
     </div>
 
-    <!-- قسم النتائج -->
+    <!-- النتائج -->
     <div class="chat-box">
         <div class="chat-title">📋 النتائج</div>
-        <div class="result-area" id="result" style="min-height:150px; padding:15px; background:#0a0a0a; border-radius:5px; overflow-x:auto">بانتظار أمرك...</div>
+        <div class="result-area" id="result" style="min-height:150px; padding:15px; background:#0a0a0a; border-radius:5px">بانتظار أمرك...</div>
     </div>
 </div>
 
 <script>
     let users = JSON.parse(localStorage.getItem('satool_users')) || [];
     let currentUser = JSON.parse(localStorage.getItem('satool_current')) || null;
+    let forumPosts = JSON.parse(localStorage.getItem('satool_forum')) || [];
     let transfers = JSON.parse(localStorage.getItem('satool_transfers')) || [];
     let stats = JSON.parse(localStorage.getItem('satool_stats')) || { online: 12, purchases: 342, visitors: 1289, active: 56, profit: 0 };
     let uploadedFiles = JSON.parse(localStorage.getItem('satool_uploaded_files')) || {};
     let currentTarget = localStorage.getItem('satool_target') || 'example.com';
     
-    // أقسام الأدوات
     let toolSections = JSON.parse(localStorage.getItem('satool_tool_sections')) || [
         { id: 'exploit', name: '🔓 أدوات الثغرات', icon: '🔓', tools: [
-            { name: "💉 SQL Injection", desc: "اختبار ثغرات SQL", hasFile: false, fileId: null, fileName: null, content: "SQL Injection Tool\nTarget: {target}\nStatus: تم فحص ثغرات SQL\nResults: تم العثور على 3 ثغرات" },
-            { name: "🌐 XSS Attack", desc: "اختبار ثغرات XSS", hasFile: false, fileId: null, fileName: null, content: "XSS Scanner\nTarget: {target}\nResults: تم العثور على 5 ثغرات XSS" },
+            { name: "💉 SQL Injection", desc: "اختبار ثغرات SQL", hasFile: false, fileId: null, fileName: null, content: "SQL Injection Tool\nTarget: {target}\nResults: 3 vulnerabilities found" },
+            { name: "🌐 XSS Attack", desc: "اختبار ثغرات XSS", hasFile: false, fileId: null, fileName: null, content: "XSS Scanner\nTarget: {target}\nResults: 5 XSS vulnerabilities" },
             { name: "📁 LFI/RFI", desc: "اختبار تضمين الملفات", hasFile: false, fileId: null, fileName: null, content: "LFI/RFI Scanner\nTarget: {target}\nFiles found: /etc/passwd, /config.php" }
         ]},
         { id: 'info', name: '🔍 أدوات المعلومات', icon: '🔍', tools: [
             { name: "🔍 OSINT Search", desc: "البحث في المصادر المفتوحة", hasFile: false, fileId: null, fileName: null, content: "OSINT Search\nTarget: {target}\nResults: 47 links, 12 emails found" },
             { name: "🌐 Subdomain Finder", desc: "اكتشاف النطاقات الفرعية", hasFile: false, fileId: null, fileName: null, content: "Subdomain Finder\nTarget: {target}\nSubdomains: mail., admin., dev., api." },
-            { name: "📡 Port Scanner", desc: "اختبار قنوات TCP", hasFile: false, fileId: null, fileName: null, content: "Port Scanner\nTarget: {target}\nOpen ports: 22, 80, 443, 3306" },
-            { name: "🔧 DNS Lookup", desc: "استعلامات DNS", hasFile: false, fileId: null, fileName: null, content: "DNS Lookup\nTarget: {target}\nRecords: A, MX, TXT, NS" },
-            { name: "📋 Whois Lookup", desc: "معلومات النطاق", hasFile: false, fileId: null, fileName: null, content: "Whois Lookup\nTarget: {target}\nRegistrar: GoDaddy\nCreated: 2020-01-01" }
+            { name: "📡 Port Scanner", desc: "اختبار قنوات TCP", hasFile: false, fileId: null, fileName: null, content: "Port Scanner\nTarget: {target}\nOpen ports: 22, 80, 443, 3306" }
         ]}
     ];
     
@@ -236,20 +255,110 @@
     };
     
     function saveUsers() { localStorage.setItem('satool_users', JSON.stringify(users)); }
+    function saveForum() { localStorage.setItem('satool_forum', JSON.stringify(forumPosts)); }
     function saveToolSections() { localStorage.setItem('satool_tool_sections', JSON.stringify(toolSections)); }
     function saveStats() { localStorage.setItem('satool_stats', JSON.stringify(stats)); }
     function saveTransfers() { localStorage.setItem('satool_transfers', JSON.stringify(transfers)); }
     function saveUploadedFiles() { localStorage.setItem('satool_uploaded_files', JSON.stringify(uploadedFiles)); }
     
     function showSection(section) {
-        document.querySelectorAll('#chatSection, #toolsSection, #serversSection, #transferSection, #buySection, #adminSection').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('#chatSection, #forumSection, #toolsSection, #serversSection, #transferSection, #buySection, #adminSection').forEach(s => s.classList.add('hidden'));
         document.getElementById(section + 'Section').classList.remove('hidden');
         if(section === 'tools') loadToolsSections();
         if(section === 'servers') loadServers();
         if(section === 'admin') loadAdminPanel();
         if(section === 'transfer') loadTransferHistory();
+        if(section === 'forum') loadForum();
     }
     
+    // ============= المنتدى =============
+    function loadForum() {
+        let container = document.getElementById('forumPosts');
+        container.innerHTML = '';
+        if(forumPosts.length === 0) {
+            container.innerHTML = '<div class="forum-post"><div class="post-author">📢 النظام</div><div class="post-content">كن أول من يكتب موضوعاً في المنتدى!</div></div>';
+            return;
+        }
+        forumPosts.forEach((post, idx) => {
+            container.innerHTML += `
+                <div class="forum-post">
+                    <div class="post-header">
+                        <span class="post-author">👤 ${post.author}</span>
+                        <span class="post-date">${new Date(post.date).toLocaleString()}</span>
+                    </div>
+                    <div class="post-title">${post.title}</div>
+                    <div class="post-content">${post.content}</div>
+                    <button onclick="showReplyForm(${post.id})" style="margin-top:10px">💬 رد</button>
+                    <div id="reply-form-${post.id}" style="display:none; margin-top:10px">
+                        <textarea id="reply-text-${post.id}" rows="2" placeholder="اكتب ردك..." style="width:100%; padding:8px; background:#0a0a0a; border:1px solid #00ff41; color:#00ff41; border-radius:5px"></textarea>
+                        <button onclick="addReply(${post.id})">إرسال الرد</button>
+                        <button onclick="hideReplyForm(${post.id})">إلغاء</button>
+                    </div>
+                    <div class="replies-area" id="replies-${post.id}">
+                        ${loadReplies(post)}
+                    </div>
+                    ${currentUser?.isAdmin ? `<button onclick="deletePost(${post.id})" style="margin-top:10px; background:#ff0000; color:#fff">🗑️ حذف الموضوع</button>` : ''}
+                </div>
+            `;
+        });
+    }
+    
+    function loadReplies(post) {
+        if(!post.replies || post.replies.length === 0) return '';
+        let html = '';
+        post.replies.forEach(reply => {
+            html += `<div class="reply-item"><span class="reply-author">✏️ ${reply.author}</span><br>${reply.text}<br><span style="font-size:0.7em; color:#888">${new Date(reply.date).toLocaleString()}</span></div>`;
+        });
+        return html;
+    }
+    
+    function showReplyForm(postId) {
+        document.getElementById(`reply-form-${postId}`).style.display = 'block';
+    }
+    
+    function hideReplyForm(postId) {
+        document.getElementById(`reply-form-${postId}`).style.display = 'none';
+    }
+    
+    function addReply(postId) {
+        if(!currentUser) { alert('سجل دخول أولاً'); return; }
+        let replyText = document.getElementById(`reply-text-${postId}`).value.trim();
+        if(!replyText) { alert('اكتب ردك'); return; }
+        let post = forumPosts.find(p => p.id === postId);
+        if(post) {
+            if(!post.replies) post.replies = [];
+            post.replies.push({ id: Date.now(), author: currentUser.username, text: replyText, date: Date.now() });
+            saveForum();
+            loadForum();
+            hideReplyForm(postId);
+            document.getElementById('result').innerHTML = `✅ تم إضافة ردك`;
+        }
+    }
+    
+    function addNewPost() {
+        if(!currentUser) { alert('سجل دخول أولاً'); return; }
+        let title = document.getElementById('postTitle').value.trim();
+        let content = document.getElementById('postContent').value.trim();
+        if(!title || !content) { alert('اكتب عنوان ومحتوى'); return; }
+        forumPosts.unshift({ id: Date.now(), author: currentUser.username, title: title, content: content, date: Date.now(), replies: [] });
+        saveForum();
+        loadForum();
+        document.getElementById('postTitle').value = '';
+        document.getElementById('postContent').value = '';
+        document.getElementById('result').innerHTML = `✅ تم إنشاء موضوع جديد: "${title}"`;
+    }
+    
+    function deletePost(postId) {
+        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
+        if(confirm('حذف هذا الموضوع؟')) {
+            forumPosts = forumPosts.filter(p => p.id !== postId);
+            saveForum();
+            loadForum();
+            document.getElementById('result').innerHTML = `🗑️ تم حذف الموضوع`;
+        }
+    }
+    
+    // ============= الأدوات =============
     function loadToolsSections() {
         let container = document.getElementById('toolsSectionsContainer');
         container.innerHTML = '';
@@ -259,33 +368,15 @@
             sectionDiv.innerHTML = `
                 <div class="section-header">
                     <span class="section-title-text">${section.name}</span>
-                    ${currentUser?.isAdmin ? `
-                        <div class="section-controls">
-                            <button class="admin-action" onclick="editSectionName(${sectionIdx})">✏️ تعديل</button>
-                            <button class="admin-action" onclick="deleteSection(${sectionIdx})">🗑️ حذف</button>
-                        </div>
-                    ` : ''}
+                    ${currentUser?.isAdmin ? `<div class="section-controls"><button class="admin-action" onclick="editSectionName(${sectionIdx})">✏️</button><button class="admin-action" onclick="deleteSection(${sectionIdx})">🗑️</button></div>` : ''}
                 </div>
                 <div class="tools-grid" id="tools-grid-${sectionIdx}"></div>
             `;
             container.appendChild(sectionDiv);
-            
             let grid = document.getElementById(`tools-grid-${sectionIdx}`);
             grid.innerHTML = '';
             section.tools.forEach((tool, toolIdx) => {
-                let fileInfo = '';
-                if(tool.hasFile && tool.fileName) {
-                    fileInfo = `<div class="tool-file">📎 ${tool.fileName}</div>`;
-                }
-                grid.innerHTML += `
-                    <div class="tool-card" onclick="runTool(${sectionIdx}, ${toolIdx})">
-                        ${currentUser?.isAdmin ? `<button class="tool-admin-edit" onclick="event.stopPropagation(); editToolInSection(${sectionIdx}, ${toolIdx})">✏️</button>` : ''}
-                        ${currentUser?.isAdmin ? `<button class="tool-admin-delete" onclick="event.stopPropagation(); deleteToolFromSection(${sectionIdx}, ${toolIdx})">🗑️</button>` : ''}
-                        <div class="tool-name">${tool.name}</div>
-                        <div class="tool-desc">${tool.desc || 'أداة متخصصة'}</div>
-                        ${fileInfo}
-                    </div>
-                `;
+                grid.innerHTML += `<div class="tool-card" onclick="runTool(${sectionIdx}, ${toolIdx})"><div class="tool-name">${tool.name}</div><div class="tool-desc">${tool.desc}</div></div>`;
             });
         });
     }
@@ -293,164 +384,54 @@
     async function runTool(sectionIdx, toolIdx) {
         if(!currentUser) { alert('سجل دخول أولاً'); return; }
         let tool = toolSections[sectionIdx].tools[toolIdx];
-        if(!tool) return;
-        
-        // إذا كان هناك ملف مرفق - تحميل الملف
-        if(tool.hasFile && tool.fileId && uploadedFiles[tool.fileId]) {
-            let file = uploadedFiles[tool.fileId];
-            // إنشاء رابط تحميل الملف
-            const link = document.createElement('a');
-            link.href = file.data;
-            link.download = file.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            document.getElementById('result').innerHTML = `📥 **${tool.name}**\n📁 تم فتح/تحميل الملف: ${file.name}\n📦 الحجم: ${(file.size/1024).toFixed(2)} KB\n🎯 الهدف: ${currentTarget}\n⏰ ${new Date().toLocaleString()}`;
-            stats.purchases++; saveStats(); updateStats();
-            return;
-        }
-        
-        // عرض محتوى الأداة مع تضمين الهدف
-        let content = tool.content || `✅ ${tool.name}\n📊 اكتمل بنجاح`;
-        content = content.replace(/{target}/g, currentTarget);
+        let content = tool.content.replace(/{target}/g, currentTarget);
         document.getElementById('result').innerHTML = `${content}\n\n🎯 الهدف: ${currentTarget}\n👤 المستخدم: ${currentUser.username}\n⏰ ${new Date().toLocaleString()}`;
         stats.purchases++; saveStats(); updateStats();
     }
     
-    // إدارة الأقسام
     function updateSectionSelect() {
         let select = document.getElementById('toolSectionSelect');
         if(select) {
             select.innerHTML = '';
-            toolSections.forEach((section, idx) => {
-                select.innerHTML += `<option value="${idx}">${section.name}</option>`;
-            });
+            toolSections.forEach((section, idx) => { select.innerHTML += `<option value="${idx}">${section.name}</option>`; });
         }
     }
     
     function addNewSection() {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
+        if(!currentUser?.isAdmin) return;
         let name = document.getElementById('newSectionName').value;
         let icon = document.getElementById('newSectionIcon').value || '📁';
-        if(!name) { alert('اكتب اسم القسم'); return; }
+        if(!name) return;
         toolSections.push({ id: 'sec_' + Date.now(), name: icon + ' ' + name, icon: icon, tools: [] });
         saveToolSections();
         loadToolsSections();
         updateSectionSelect();
         document.getElementById('newSectionName').value = '';
         document.getElementById('newSectionIcon').value = '';
-        document.getElementById('result').innerHTML = `✅ تم إنشاء قسم جديد: ${icon} ${name}`;
     }
     
     function editSectionName(sectionIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        let newName = prompt('الاسم الجديد للقسم:', toolSections[sectionIdx].name);
-        if(newName) {
-            toolSections[sectionIdx].name = newName;
-            saveToolSections();
-            loadToolsSections();
-            updateSectionSelect();
-            document.getElementById('result').innerHTML = `✅ تم تعديل اسم القسم`;
-        }
+        if(!currentUser?.isAdmin) return;
+        let newName = prompt('الاسم الجديد:', toolSections[sectionIdx].name);
+        if(newName) { toolSections[sectionIdx].name = newName; saveToolSections(); loadToolsSections(); updateSectionSelect(); }
     }
     
     function deleteSection(sectionIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        if(confirm('حذف هذا القسم وجميع أدواته؟')) {
-            toolSections.splice(sectionIdx, 1);
-            saveToolSections();
-            loadToolsSections();
-            updateSectionSelect();
-            document.getElementById('result').innerHTML = `🗑️ تم حذف القسم`;
-        }
+        if(!currentUser?.isAdmin) return;
+        if(confirm('حذف القسم؟')) { toolSections.splice(sectionIdx, 1); saveToolSections(); loadToolsSections(); updateSectionSelect(); }
     }
     
-    function editToolInSection(sectionIdx, toolIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        let tool = toolSections[sectionIdx].tools[toolIdx];
-        let newName = prompt('الاسم الجديد:', tool.name);
-        let newDesc = prompt('الوصف الجديد:', tool.desc);
-        if(newName) tool.name = newName;
-        if(newDesc) tool.desc = newDesc;
-        saveToolSections();
-        loadToolsSections();
-        document.getElementById('result').innerHTML = `✅ تم تعديل الأداة`;
-    }
-    
-    function deleteToolFromSection(sectionIdx, toolIdx) {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
-        if(confirm('حذف هذه الأداة؟')) {
-            let tool = toolSections[sectionIdx].tools[toolIdx];
-            if(tool.hasFile && tool.fileId && uploadedFiles[tool.fileId]) {
-                delete uploadedFiles[tool.fileId];
-                saveUploadedFiles();
-            }
-            toolSections[sectionIdx].tools.splice(toolIdx, 1);
-            saveToolSections();
-            loadToolsSections();
-            document.getElementById('result').innerHTML = `🗑️ تم حذف الأداة`;
-        }
-    }
-    
-    function addNewToolWithFile() {
-        if(!currentUser?.isAdmin) { alert('للأدمن فقط'); return; }
+    document.getElementById('addToolBtn').onclick = function() {
+        if(!currentUser?.isAdmin) return;
         let sectionIdx = parseInt(document.getElementById('toolSectionSelect').value);
         let name = document.getElementById('newToolName').value;
         let desc = document.getElementById('newToolDesc').value;
-        let fileInput = document.getElementById('newToolFile');
-        
-        if(isNaN(sectionIdx)) { alert('اختر القسم أولاً'); return; }
-        if(!name) { alert('اكتب اسم الأداة'); return; }
-        
-        let newTool = { name: name, desc: desc || 'أداة جديدة', hasFile: false, fileId: null, fileName: null, content: `✅ ${name}\n📊 تم تشغيل الأداة بنجاح\n🎯 الهدف: {target}` };
-        
-        if(fileInput.files.length > 0) {
-            let file = fileInput.files[0];
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let fileId = 'toolfile_' + Date.now() + '_' + file.name;
-                uploadedFiles[fileId] = {
-                    name: file.name,
-                    data: e.target.result,
-                    type: file.type,
-                    size: file.size,
-                    toolName: name
-                };
-                saveUploadedFiles();
-                newTool.hasFile = true;
-                newTool.fileId = fileId;
-                newTool.fileName = file.name;
-                toolSections[sectionIdx].tools.push(newTool);
-                saveToolSections();
-                loadToolsSections();
-                document.getElementById('result').innerHTML = `✅ تم إضافة "${name}" إلى ${toolSections[sectionIdx].name} مع ملف ${file.name}`;
-                clearAddToolForm();
-            };
-            reader.readAsDataURL(file);
-        } else {
-            toolSections[sectionIdx].tools.push(newTool);
-            saveToolSections();
-            loadToolsSections();
-            document.getElementById('result').innerHTML = `✅ تم إضافة "${name}" إلى ${toolSections[sectionIdx].name}`;
-            clearAddToolForm();
-        }
-    }
-    
-    function clearAddToolForm() {
+        if(!name) return;
+        toolSections[sectionIdx].tools.push({ name: name, desc: desc || 'أداة جديدة', hasFile: false, content: `✅ ${name}\nتم تشغيل الأداة بنجاح` });
+        saveToolSections();
+        loadToolsSections();
         document.getElementById('newToolName').value = '';
         document.getElementById('newToolDesc').value = '';
-        document.getElementById('newToolFile').value = '';
-        document.getElementById('fileNameDisplay').innerHTML = 'لم يتم اختيار ملف';
-    }
-    
-    document.getElementById('addToolBtn').onclick = addNewToolWithFile;
-    document.getElementById('newToolFile').onchange = function() {
-        let span = document.getElementById('fileNameDisplay');
-        if(this.files.length > 0) {
-            span.innerHTML = `📎 ${this.files[0].name} (${(this.files[0].size/1024).toFixed(2)} KB)`;
-        } else {
-            span.innerHTML = 'لم يتم اختيار ملف';
-        }
     };
     
     function loadServers() {
@@ -462,35 +443,35 @@
     }
     
     async function connectVPN(serverIdx) {
-        if(!currentUser) { alert('سجل دخول أولاً'); return; }
+        if(!currentUser) return;
         let server = vpnServers[serverIdx];
         let user = users.find(u => u.id === currentUser.id);
         if(user.points >= server.points) {
             user.points -= server.points;
             saveUsers();
             updateStats();
-            document.getElementById('result').innerHTML = `✅ **تم الاتصال بـ ${server.name}**\n🌐 الخادم: ${server.host}\n💰 تم خصم ${server.points} نقطة\n🎯 الهدف: ${currentTarget}\n\n📌 للإعداد اليدوي:\n• استخدم Proxy: ${server.host}:443\n• البروتوكول: HTTPS`;
+            document.getElementById('result').innerHTML = `✅ تم الاتصال بـ ${server.name}\n🌐 الخادم: ${server.host}\n💰 تم خصم ${server.points} نقاط\n🎯 الهدف: ${currentTarget}`;
             getCurrentIP();
-        } else { document.getElementById('result').innerHTML = `❌ تحتاج ${server.points} نقطة، رصيدك: ${user.points}`; }
+        } else { document.getElementById('result').innerHTML = `❌ تحتاج ${server.points} نقاط، رصيدك: ${user.points}`; }
     }
     
     async function getCurrentIP() {
         try {
             const res = await fetch('https://api.ipify.org?format=json');
             const data = await res.json();
-            document.getElementById('currentIP').innerHTML = `🌐 عنوان IP الحالي: ${data.ip} | 🎯 الهدف: ${currentTarget}`;
+            document.getElementById('currentIP').innerHTML = `🌐 IP: ${data.ip} | 🎯 ${currentTarget}`;
         } catch(e) {}
     }
     
     function transferPoints() {
-        if(!currentUser) { alert('سجل دخول أولاً'); return; }
+        if(!currentUser) return;
         let toUsername = document.getElementById('transferTo').value.trim();
         let amount = parseInt(document.getElementById('transferAmount').value);
         if(!toUsername || isNaN(amount) || amount <= 0) return;
         let fromUser = users.find(u => u.id === currentUser.id);
         let toUser = users.find(u => u.username === toUsername);
         if(!toUser) { alert('المستخدم غير موجود'); return; }
-        if(fromUser.points < amount) { alert(`نقاط غير كافية`); return; }
+        if(fromUser.points < amount) { alert('نقاط غير كافية'); return; }
         fromUser.points -= amount;
         toUser.points += amount;
         saveUsers();
@@ -498,22 +479,22 @@
         saveTransfers();
         loadTransferHistory();
         updateStats();
-        document.getElementById('result').innerHTML = `✅ تم تحويل ${amount} نقطة إلى ${toUsername}\n🎯 الهدف: ${currentTarget}`;
+        document.getElementById('result').innerHTML = `✅ تم تحويل ${amount} نقطة إلى ${toUsername}`;
         document.getElementById('transferTo').value = '';
         document.getElementById('transferAmount').value = '';
     }
     
     function loadTransferHistory() {
         let container = document.getElementById('transferHistory');
-        container.innerHTML = '<div class="chat-title" style="font-size:1em">📜 سجل التحويلات</div>';
+        container.innerHTML = '<div class="chat-title">📜 سجل التحويلات</div>';
         transfers.slice(0, 20).forEach(t => {
             container.innerHTML += `<div class="reply-item">💰 ${t.from} → ${t.to} : ${t.amount} نقطة | ${new Date(t.date).toLocaleString()}</div>`;
         });
     }
     
     function buyPointsTelegram() {
-        let amount = parseInt(document.getElementById('pointsAmount').value);
-        document.getElementById('result').innerHTML = `⭐ شراء ${amount} نقطة\n💰 السعر: ${amount/100}$\n⭐ نجوم تيليجرام: ${amount/10} نجمة\n🎯 الهدف: ${currentTarget}\n\nللشراء تواصل مع البوت @SatoolBot`;
+        let amount = document.getElementById('pointsAmount').value;
+        document.getElementById('result').innerHTML = `⭐ شراء ${amount} نقطة\n💰 السعر: ${amount/100}$\n⭐ نجوم: ${amount/10}\nللشراء تواصل مع @SatoolBot`;
     }
     
     function loadAdminPanel() {
@@ -521,26 +502,22 @@
         document.getElementById('totalProfit').innerText = stats.profit || 0;
         updateSectionSelect();
         let usersList = document.getElementById('adminUsersList');
-        usersList.innerHTML = '<div class="chat-title" style="font-size:1em">👥 المستخدمين</div>';
-        users.forEach(u => {
-            usersList.innerHTML += `<div class="reply-item">${u.username} - ${u.points} نقطة${u.isAdmin ? ' (أدمن)' : ''}</div>`;
-        });
+        usersList.innerHTML = '<div class="chat-title">👥 المستخدمين</div>';
+        users.forEach(u => { usersList.innerHTML += `<div class="reply-item">${u.username} - ${u.points} نقطة</div>`; });
     }
     
-    function loadChat() { document.getElementById('chatMessages').innerHTML = '<div class="message bot-msg">🤖 مرحباً! اسألني أي شيء عن الأدوات والثغرات...</div>'; }
+    function loadChat() { document.getElementById('chatMessages').innerHTML = '<div class="message bot-msg">🤖 مرحباً! اسألني أي شيء...</div>'; }
     
     function sendChat() {
-        let input = document.getElementById('chatInput');
-        let text = input.value.trim();
+        let text = document.getElementById('chatInput').value.trim();
         if(!text || !currentUser) return;
         let container = document.getElementById('chatMessages');
         container.innerHTML += `<div class="message user-msg">👤 ${text}</div>`;
         setTimeout(() => {
-            container.innerHTML += `<div class="message bot-msg">🤖 رد: "${text}"\n\n🎯 الهدف الحالي: ${currentTarget}\nاسأل عن SQL, XSS, LFI, OSINT, Port Scanner!</div>`;
+            container.innerHTML += `<div class="message bot-msg">🤖 رد: "${text}"\n🎯 الهدف: ${currentTarget}\nاسأل عن SQL, XSS, LFI, OSINT, Port Scanner!</div>`;
             container.scrollTop = container.scrollHeight;
         }, 500);
-        input.value = '';
-        container.scrollTop = container.scrollHeight;
+        document.getElementById('chatInput').value = '';
     }
     
     function updateStats() {
@@ -552,7 +529,6 @@
             let user = users.find(u => u.id === currentUser.id);
             document.getElementById('userPoints').innerText = user ? user.points : 0;
         }
-        document.getElementById('currentIP').innerHTML = `🌐 IP الحالي: محلي | 🎯 الهدف: ${currentTarget}`;
     }
     
     function login() {
@@ -562,7 +538,7 @@
         if(user) {
             currentUser = user;
             localStorage.setItem('satool_current', JSON.stringify(user));
-            document.getElementById('loginArea').innerHTML = `<span>👋 مرحباً ${user.username} ${user.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
+            document.getElementById('loginArea').innerHTML = `<span>👋 ${user.username} ${user.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
             if(user.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
             updateStats(); loadChat(); loadToolsSections(); showSection('chat'); getCurrentIP();
         } else { alert('خطأ\nلأدمن: Admin / Admin@123'); }
@@ -582,7 +558,7 @@
     function logout() { localStorage.removeItem('satool_current'); location.reload(); }
     
     if(currentUser) {
-        document.getElementById('loginArea').innerHTML = `<span>👋 مرحباً ${currentUser.username} ${currentUser.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
+        document.getElementById('loginArea').innerHTML = `<span>👋 ${currentUser.username} ${currentUser.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
         if(currentUser.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
         loadChat(); loadToolsSections();
     }
