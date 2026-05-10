@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ساتول - نظام أدوات متكامل</title>
+    <title>SaTools{10}/title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; padding: 20px; }
@@ -64,7 +64,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>⚡ ساتول - نظام أدوات متكامل</h1>
+        <h1>⚡SaTools {10}/h1>
         <div class="login-area" id="loginArea">
             <input type="text" id="loginUser" placeholder="اسم المستخدم">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
@@ -565,7 +565,7 @@
             document.getElementById('loginArea').innerHTML = `<span>👋 مرحباً ${user.username} ${user.isAdmin ? '<span class="admin-badge">أدمن</span>' : ''}</span> <button class="logout-btn" onclick="logout()">خروج</button>`;
             if(user.isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
             updateStats(); loadChat(); loadToolsSections(); showSection('chat'); getCurrentIP();
-        } else { alert('خطأ\nلأدمن: Admin / Admin@123'); }
+        } else { alert('خطأ\nلأدمن: -- / -'); }
     }
     
     function register() {
